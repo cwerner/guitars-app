@@ -34,9 +34,9 @@
           <div class="tile is-parent is-vertical">
             <article class="tile is-child box">
                 {% if img_src %}
-                <h1 class="title">Source</h1>
+                <h2 class="title">Source</h2>
 
-              <figure class="image is-1by1">
+              <figure class="image">
                   <img src="{{img_src}}" class="img-rounded">
                 </figure>
                 {% endif %}
@@ -45,7 +45,7 @@
           <div class="tile is-parent">
             <article class="tile is-child box">
                 {% if prediction_result %}
-                <h1 class="title">Prediction</h1>
+                <h2 class="title">Prediction: {% if prediction_winner %}{{prediction_winner}}{% endif %}</h2>
                 <div id="graph-0"></div>
                 {% endif %}
 

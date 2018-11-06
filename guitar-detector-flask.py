@@ -12,6 +12,16 @@ import datetime
 
 from PIL import *
 
+import matplotlib
+matplotlib.use('Agg')
+
+# fastai
+from fastai import *
+from fastai.vision import *
+import torch
+from pathlib import Path
+
+
 # plotly plotting
 import json
 import plotly
@@ -48,6 +58,32 @@ def FUN_500(error):
 
 # define a simple data batch
 Batch = namedtuple('Batch', ['data'])
+
+# # define the classes (TODO: read from file with model)
+labels = ['fender_telecaster', 'gibson_les_paul', 'gibson_es', 
+          'gibson_explorer', 'gibson_flying_v', 'fender_mustang', 
+          'fender_stratocaster', 'gibson_sg', 'fender_jaguar', 
+          'gibson_firebird', 'fender_jazzmaster']
+
+# lookup
+names = {'fender_telecaster': "Fender Stratocaster",
+         'gibson_les_paul':   "Gibson Les Paul",
+         'gibson_es':         "Gibson ES", 
+         'gibson_explorer':   "Gibson Explorer",
+         'gibson_flying_v':   "Gibson Flying V",
+         'fender_mustang':    "Fender Mustang",
+         'fender_stratocaster': 'Fender Stratocaster', 
+         'gibson_sg':         "Gibson SG",
+         'fender_jaguar':     "Fender Jaguar",
+         'gibson_firebird':   "Gibson Firebird", 
+         'fender_jazzmaster': "Gibson Jazzmaster"}
+
+path = Path("/tmp")
+data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
+learner = create_cnn(data, models.resnet50)
+learner.model.load_state_dict(
+    torch.load("stage-3-50.pth", map_location="cpu")
+)
 
 # Prapare the MXNet model (pre-trained)
 sym, arg_params, aux_params = mx.model.load_checkpoint('resnet-152', 0)
@@ -99,6 +135,44 @@ def mx_predict(file_location, local=False):
     return result
 
 
+
+def get_image_new(file_location, local=False):
+    # users can either 
+    # [1] upload a picture (local = True)
+    # or
+    # [2] provide the image URL (local = False)
+    if local == True:
+        fname = file_location
+    else:
+        fname = url_for(file_location, dirname="static", filename=img_pool + file_location)
+    img = open_image(fname)
+    
+    if img is None:
+         return None
+    return img
+
+
+def predict(file_location, local=False):
+    img = get_image_new(file_location, local)
+
+    pred_class, pred_idx, outputs = learner.predict(img)
+    formatted_outputs = [x.numpy() * 100 for x in outputs] #torch.nn.functional.softmax(outputs, dim=0)]
+    pred_probs = sorted(
+            zip(learner.data.classes, formatted_outputs ),
+            key=lambda p: p[1],
+            reverse=True
+        )
+
+    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
+    pred_probs2 = sorted(
+            zip(learner.data.classes, formatted_outputs ),
+            key=lambda p: p[1],
+            reverse=True
+    )
+
+
+    return (pred_probs, names[pred_probs2[0][0]])
+
 ###### Plotting
 def prediction_barchart(result):
 
@@ -113,7 +187,7 @@ def prediction_barchart(result):
     colors = dict(zip(labels, cols))
   
     
-    bins = [0, .10, .25, .75, 1.00]
+    bins = [0, 10, 25, 75, 100]
 
     # Build dataframe
     df = pd.DataFrame({'y': y_values,
@@ -172,12 +246,13 @@ def FUN_root():
 	# If user chooses to upload an image instead, endpoint "/upload_image" will be invoked
     if request.method == "POST":
         img_url = request.form.get("img_url")
-        prediction_result = mx_predict(img_url)
+        #prediction_result = mx_predict(img_url)
+        prediction_result, winner = predict(img_url)
 
-        # create plotly chart
         plotly_json = prediction_barchart(prediction_result)
         return render_template("index.html", img_src = img_url, 
                                              prediction_result = prediction_result,
+                                             prediction_winner = prediction_winner,
                                              graphJSON=plotly_json)
     else:
         return render_template("index.html")
@@ -209,7 +284,11 @@ def FUN_upload_image():
         if file and allowed_file(file.filename):
             filename = os.path.join("static/img_pool", hashlib.sha256(str(datetime.datetime.now()).encode('utf-8')).hexdigest() + secure_filename(file.filename).lower())
             file.save(filename)
-            prediction_result = mx_predict(filename, local=True)
+            #prediction_result = mx_predict(filename, local=True)
+
+            prediction_result, prediction_winner = predict(filename, local=True)
+            print(prediction_result)
+
             FUN_resize_img(filename)
 
             # create plotly chart
@@ -218,6 +297,7 @@ def FUN_upload_image():
             print( plotly_json )
             return render_template("index.html", img_src = filename, 
                                                  prediction_result = prediction_result,
+                                                 prediction_winner = prediction_winner,
                                                  graphJSON=plotly_json)
     return(redirect(url_for("FUN_root")))
 
