@@ -2,15 +2,16 @@
 {% block body %}
 <section class="section">
   <div class="container">
-    <div class="tile">
-      <p><strong>Sorry, something is wrong.</strong>Possibly:</p>
-      <ul>
+    <div class="article notification is-danger">
+      <p><strong>Oh, something is wrong!</strong><br>
+      Possibly:
+      <ol style="padding-left:40px">
         <li>a wrong endpoint</li>
-        <li>a band image extension</li>
+        <li>an unsupported image extension (only use jpg, png, bmp)</li>
         <li>an image name that is too long or has invalid characters</li>
-      </ul>
+      </ol>
 
-      <p>Please go back to the <a href="/"><b>main page</b></a>.</p>
+      Please go back to the <a href="/"><b>main page</b></a> and try again.</p>
     </div>
   </div>
 </section>
