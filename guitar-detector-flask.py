@@ -3,15 +3,13 @@
 from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
-import cv2
 import numpy as np
 from collections import namedtuple
-import mxnet as mx
 import  hashlib
 import datetime
 
-from PIL import *
-
+#from PIL import *
+from PIL import Image as PILImage
 import matplotlib
 matplotlib.use('Agg')
 
@@ -56,17 +54,14 @@ def FUN_500(error):
 # Functions for running classifier
 ################################################
 
-# define a simple data batch
-Batch = namedtuple('Batch', ['data'])
-
-# # define the classes (TODO: read from file with model)
+# define the classes (TODO: read from file with model)
 labels = ['fender_telecaster', 'gibson_les_paul', 'gibson_es', 
           'gibson_explorer', 'gibson_flying_v', 'fender_mustang', 
           'fender_stratocaster', 'gibson_sg', 'fender_jaguar', 
           'gibson_firebird', 'fender_jazzmaster']
 
 # lookup
-names = {'fender_telecaster': "Fender Stratocaster",
+names = {'fender_telecaster': "Fender Telecaster",
          'gibson_les_paul':   "Gibson Les Paul",
          'gibson_es':         "Gibson ES", 
          'gibson_explorer':   "Gibson Explorer",
@@ -76,7 +71,7 @@ names = {'fender_telecaster': "Fender Stratocaster",
          'gibson_sg':         "Gibson SG",
          'fender_jaguar':     "Fender Jaguar",
          'gibson_firebird':   "Gibson Firebird", 
-         'fender_jazzmaster': "Gibson Jazzmaster"}
+         'fender_jazzmaster': "Fender Jazzmaster"}
 
 path = Path("/tmp")
 data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
@@ -84,57 +79,6 @@ learner = create_cnn(data, models.resnet50)
 learner.model.load_state_dict(
     torch.load("stage-3-50.pth", map_location="cpu")
 )
-
-# Prapare the MXNet model (pre-trained)
-sym, arg_params, aux_params = mx.model.load_checkpoint('resnet-152', 0)
-mod = mx.mod.Module(symbol=sym, context=mx.cpu(), label_names=None)
-mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))], 
-         label_shapes=mod._label_shapes)
-mod.set_params(arg_params, aux_params, allow_missing=True)
-with open('synset.txt', 'r') as f:
-    labels = [l.rstrip() for l in f]
-
-
-def get_image(file_location, local=False):
-    # users can either 
-    # [1] upload a picture (local = True)
-    # or
-    # [2] provide the image URL (local = False)
-    if local == True:
-        fname = file_location
-    else:
-        fname = mx.test_utils.download(file_location, dirname="static/img_pool")
-    img = cv2.cvtColor(cv2.imread(fname), cv2.COLOR_BGR2RGB)
-
-    if img is None:
-         return None
-    
-    # convert into format (batch, RGB, width, height)
-    img = cv2.resize(img, (224, 224))
-    img = np.swapaxes(img, 0, 2)
-    img = np.swapaxes(img, 1, 2)
-    img = img[np.newaxis, :]
-
-    return img
-
-
-def mx_predict(file_location, local=False):
-    img = get_image(file_location, local)
-
-    # compute the predict probabilities
-    mod.forward(Batch([mx.nd.array(img)]))
-    prob = mod.get_outputs()[0].asnumpy()
-
-    # Return the top-5
-    prob = np.squeeze(prob)
-    a = np.argsort(prob)[::-1]
-    result = []
-    for i in a[0:10]:
-        result.append((labels[i].split(" ", 1)[1], round(prob[i], 3)))
-
-    return result
-
-
 
 def get_image_new(file_location, local=False):
     # users can either 
@@ -155,8 +99,13 @@ def get_image_new(file_location, local=False):
 def predict(file_location, local=False):
     img = get_image_new(file_location, local)
 
+
     pred_class, pred_idx, outputs = learner.predict(img)
-    formatted_outputs = [x.numpy() * 100 for x in outputs] #torch.nn.functional.softmax(outputs, dim=0)]
+    #print('>>>', outputs.shape)
+    #print(pred_class)
+    #print(pred_idx)
+    #print(outputs)
+    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
     pred_probs = sorted(
             zip(learner.data.classes, formatted_outputs ),
             key=lambda p: p[1],
@@ -175,19 +124,27 @@ def predict(file_location, local=False):
 
 ###### Plotting
 def prediction_barchart(result):
+    print(result)
 
     # data is list of name, value pairs
     y_values, x_values = map(list, zip(*result))
     # Create the Plotly Data Structure
 
+    x_values = [x + 0.001 if x < 0 else x for x in x_values]
+    y_values = [names[y] for y in y_values]
+
+    print(x_values)
+
+    print(y_values)
+
     # classify based on prob.
-    labels = ['Not sure', 'Well, maybe', 'Pretty sure', 'Trust me']
+    labels = ['Hm?', 'Maybe', 'Probably', 'Trust me']
     cols   = ['red', 'orange', 'lightgreen', 'darkgreen']
 
     colors = dict(zip(labels, cols))
   
     
-    bins = [0, 10, 25, 75, 100]
+    bins = [-0.1, 10, 25, 75, 100.1]
 
     # Build dataframe
     df = pd.DataFrame({'y': y_values,
@@ -228,13 +185,17 @@ def prediction_barchart(result):
 # Functions for Image Archive
 ################################################
 
-def FUN_resize_img(filename, resize_proportion = 0.3):
+def FUN_resize_img(filename, resize_proportion = 0.5):
     '''
     FUN_resize_img() will resize the image passed to it as argument to be {resize_proportion} of the original size.
     '''
-    img=cv2.imread(filename)
-    small_img = cv2.resize(img, (0,0), fx=resize_proportion, fy=resize_proportion)
-    cv2.imwrite(filename, small_img)
+    im = PILImage.open(filename)
+    basewidth = 300
+    wpercent = (basewidth/float(im.size[0]))
+    hsize = int((float(im.size[1])*float(wpercent)))
+    im.thumbnail((basewidth,hsize), PILImage.ANTIALIAS)
+    im.save(filename)
+
 
 ################################################
 # Functions Building Endpoints
@@ -247,7 +208,7 @@ def FUN_root():
     if request.method == "POST":
         img_url = request.form.get("img_url")
         #prediction_result = mx_predict(img_url)
-        prediction_result, winner = predict(img_url)
+        prediction_result, prediction_winner = predict(img_url)
 
         plotly_json = prediction_barchart(prediction_result)
         return render_template("index.html", img_src = img_url, 
@@ -287,14 +248,11 @@ def FUN_upload_image():
             #prediction_result = mx_predict(filename, local=True)
 
             prediction_result, prediction_winner = predict(filename, local=True)
-            print(prediction_result)
-
             FUN_resize_img(filename)
 
             # create plotly chart
             plotly_json = prediction_barchart(prediction_result)
-            print( prediction_result )
-            print( plotly_json )
+
             return render_template("index.html", img_src = filename, 
                                                  prediction_result = prediction_result,
                                                  prediction_winner = prediction_winner,
