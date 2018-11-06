@@ -1,0 +1,9 @@
+fastai
+Flask
+matplotlib
+numpy
+pandas
+Pillow
+plotly
+torch-nightly==1.0.0.dev20181103
+torchvision-nightly==0.2.1
