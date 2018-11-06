@@ -1,4 +1,4 @@
-# https://github.com/XD-DENG/flask-app-for-mxnet-img-classifier/blob/master/app.py
+# based on: https://github.com/XD-DENG/flask-app-for-mxnet-img-classifier/blob/master/app.py
 
 from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
@@ -11,6 +11,14 @@ import  hashlib
 import datetime
 
 from PIL import *
+
+# plotly plotting
+import json
+import plotly
+
+import pandas as pd
+import numpy as np
+import plotly.graph_objs as go
 
 app = Flask(__name__)
 # restrict the size of the file uploaded
@@ -85,10 +93,61 @@ def mx_predict(file_location, local=False):
     prob = np.squeeze(prob)
     a = np.argsort(prob)[::-1]
     result = []
-    for i in a[0:5]:
+    for i in a[0:10]:
         result.append((labels[i].split(" ", 1)[1], round(prob[i], 3)))
 
     return result
+
+
+###### Plotting
+def prediction_barchart(result):
+
+    # data is list of name, value pairs
+    y_values, x_values = map(list, zip(*result))
+    # Create the Plotly Data Structure
+
+    # classify based on prob.
+    labels = ['Not sure', 'Well, maybe', 'Pretty sure', 'Trust me']
+    cols   = ['red', 'orange', 'lightgreen', 'darkgreen']
+
+    colors = dict(zip(labels, cols))
+  
+    
+    bins = [0, .10, .25, .75, 1.00]
+
+    # Build dataframe
+    df = pd.DataFrame({'y': y_values,
+                       'x': x_values,
+                       'label': pd.cut(x_values, bins=bins, labels=labels)})
+
+    bars = []
+    for label, label_df in df.groupby('label'):
+        bars.append(go.Bar(x=label_df.x[::-1],
+                           y=label_df.y[::-1],
+                           name=label,
+                           marker={'color': colors[label]},
+                           orientation='h'))
+
+    graph = dict(
+        data=bars,
+        layout=dict(
+
+            #title='Bar Plot',
+            xaxis=dict(
+                title="Probability"
+            ),
+            hovermode='y',
+            showlegend=True,
+            margin=go.Margin(
+                l=150,
+                r=10,
+                t=10,
+            )
+        )
+    )
+
+    # Convert the figures to JSON
+    return json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
 
 
 ################################################
@@ -114,8 +173,12 @@ def FUN_root():
     if request.method == "POST":
         img_url = request.form.get("img_url")
         prediction_result = mx_predict(img_url)
-        print( prediction_result )
-        return render_template("index.html", img_src = img_url, prediction_result = prediction_result)
+
+        # create plotly chart
+        plotly_json = prediction_barchart(prediction_result)
+        return render_template("index.html", img_src = img_url, 
+                                             prediction_result = prediction_result,
+                                             graphJSON=plotly_json)
     else:
         return render_template("index.html")
 
@@ -148,7 +211,14 @@ def FUN_upload_image():
             file.save(filename)
             prediction_result = mx_predict(filename, local=True)
             FUN_resize_img(filename)
-            return render_template("index.html", img_src = filename, prediction_result = prediction_result)
+
+            # create plotly chart
+            plotly_json = prediction_barchart(prediction_result)
+            print( prediction_result )
+            print( plotly_json )
+            return render_template("index.html", img_src = filename, 
+                                                 prediction_result = prediction_result,
+                                                 graphJSON=plotly_json)
     return(redirect(url_for("FUN_root")))
 
 

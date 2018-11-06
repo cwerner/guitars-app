@@ -9,6 +9,26 @@
 </head>
 
 <body>
+
+        <nav class="navbar is-info" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    <a class="navbar-item is-hoverable" href="/">AxeNet</a>
+                    <a class="navbar-item is-hoverable" href="/about">About</a>
+         
+                    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+        
+                <div id="navbarBasicExample" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a class="navbar-item is-hoverable" href="https://www.christianwerner.net">Who made this?</a>
+                    </div>
+                </div>
+            </nav>
+        
     <section class="hero is-dark">
         <div class="hero-body">
             <div class="container">
@@ -22,27 +42,10 @@
         </div>
     </section>
 
-    <nav class="navbar is-info" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item is-hoverable" href="/"> home </a>
-                <a class="navbar-item is-hoverable" href="/about"> about </a>
-            </div>
-        </div>
-    </nav>
 
 
     {% block body %}{% endblock %}
 
-<div class="container">
     <footer class="footer">
         <div class="content has-text-centered">
             <p>
@@ -50,8 +53,18 @@
             </p>
         </div>
     </footer>
-</div>
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/bulma.js') }}"></script>
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+<script type="text/javascript">
+    var graph = {{graphJSON | safe}};
+    Plotly.plot("graph-0", graph.data, graph.layout, {displayModeBar: false, showLink: false});
+  </script>
 </body>
 </html>
