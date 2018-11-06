@@ -1,3 +1,4 @@
+torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 fastai
 Flask
 matplotlib
@@ -5,5 +6,3 @@ numpy
 pandas
 Pillow
 plotly
--f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-torchvision-nightly
