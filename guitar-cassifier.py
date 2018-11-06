@@ -77,7 +77,7 @@ path = Path("/tmp")
 data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
 learner = create_cnn(data, models.resnet50)
 learner.model.load_state_dict(
-    torch.load("stage-3-50.pth", map_location="cpu")
+    torch.load("models/stage-3-50.pth", map_location="cpu")
 )
 
 def get_image_new(file_location, local=False):
