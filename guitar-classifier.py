@@ -73,11 +73,13 @@ names = {'fender_telecaster': "Fender Telecaster",
          'gibson_firebird':   "Gibson Firebird", 
          'fender_jazzmaster': "Fender Jazzmaster"}
 
+MODEL = 'v0.1-stage-3-50.pth'
+
 path = Path("/tmp")
 data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
 learner = create_cnn(data, models.resnet50)
 learner.model.load_state_dict(
-    torch.load("models/stage-3-50.pth", map_location="cpu")
+    torch.load("models/%s" % MODEL, map_location="cpu")
 )
 
 def get_image_new(file_location, local=False):
@@ -101,10 +103,12 @@ def predict(file_location, local=False):
 
 
     pred_class, pred_idx, outputs = learner.predict(img)
-    #print('>>>', outputs.shape)
-    #print(pred_class)
-    #print(pred_idx)
-    #print(outputs)
+
+    print('file_location:', file_location)
+    print('pred_class:', pred_class)
+    print('pred_idx:', pred_idx)
+    print('outputs:', outputs)
+
     formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
     pred_probs = sorted(
             zip(learner.data.classes, formatted_outputs ),
