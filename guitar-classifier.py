@@ -32,6 +32,10 @@ app = Flask(__name__)
 # restrict the size of the file uploaded
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ################################################
 # Error Handling
@@ -86,7 +90,7 @@ learner.model.load_state_dict(
     torch.load("models/%s" % MODEL, map_location="cpu")
 )
 
-def get_image_new(file_location, local=False):
+def get_image(file_location, local=False):
     # users can either 
     # [1] upload a picture (local = True)
     # or
@@ -95,23 +99,25 @@ def get_image_new(file_location, local=False):
         fname = file_location
     else:
         fname = url_for(file_location, dirname="static", filename=img_pool + file_location)
-    img = open_image(fname)
     
-    if img is None:
-         return None
-    return img
+    if allowed_file(fname):
+        img = open_image(fname)
+    
+        if img:
+            return img
+    return None
 
 
 def predict(file_location, local=False):
-    img = get_image_new(file_location, local)
+    img = get_image(file_location, local)
 
 
     pred_class, pred_idx, outputs = learner.predict(img)
 
-    print('file_location:', file_location)
-    print('pred_class:', pred_class)
-    print('pred_idx:', pred_idx)
-    print('outputs:', outputs)
+    #print('file_location:', file_location)
+    #print('pred_class:', pred_class)
+    #print('pred_idx:', pred_idx)
+    #print('outputs:', outputs)
 
     formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
     pred_probs = sorted(
@@ -132,7 +138,7 @@ def predict(file_location, local=False):
 
 ###### Plotting
 def prediction_barchart(result):
-    print(result)
+    #print(result)
 
     # data is list of name, value pairs
     y_values, x_values = map(list, zip(*result))
@@ -140,10 +146,6 @@ def prediction_barchart(result):
 
     x_values = [x + 0.001 if x < 0 else x for x in x_values]
     y_values = [names[y] for y in y_values]
-
-    print(x_values)
-
-    print(y_values)
 
     # classify based on prob.
     labels = ['Hm?', 'Maybe', 'Probably', 'Trust me']
