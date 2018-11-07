@@ -24,7 +24,6 @@
   </div>
 </section>
 
-{% if img_src %}
 <section class="section">
   <div class="container">
 
@@ -33,20 +32,23 @@
         <div class="tile">
           <div class="tile is-parent is-vertical">
             <article class="tile is-child box">
-                {% if img_src %}
                 <h2 class="title">Source</h2>
-
-              <figure class="image">
-                  <img src="{{img_src}}" class="img-rounded">
+                <figure class="image">
+                  {% if img_src %}
+                    <img src="{{img_src}}" class="img-rounded">
+                  {% else %}
+                    <img src="{{url_for('static', filename='img/les_paul.jpg')}}" width=500 height=500 class="img-rounded">
+                  {% endif %}
                 </figure>
-                {% endif %}
             </article>
           </div>
           <div class="tile is-parent">
             <article class="tile is-child box">
-                {% if prediction_result %}
                 <h2 class="title">Prediction: {% if prediction_winner %}{{prediction_winner}}{% endif %}</h2>
+                {% if prediction_result %}
                 <div id="graph-0"></div>
+                {% else %}
+                  <img src="{{url_for('static', filename='img/les_paul_predict.png')}}" width=500 class="img-rounded">
                 {% endif %}
 
             </article>
@@ -56,6 +58,5 @@
     </div>
   </div>
 </section>
-{% endif %}
 
 {% endblock %}
