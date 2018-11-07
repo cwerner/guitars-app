@@ -32,7 +32,7 @@
         <div class="tile">
           <div class="tile is-parent is-vertical">
             <article class="tile is-child box">
-                <h2 class="title">Source</h2>
+                <h2 class="title">Source:</h2>
                 <figure class="image">
                   {% if img_src %}
                     <img src="{{img_src}}" class="img-rounded">
@@ -44,11 +44,12 @@
           </div>
           <div class="tile is-parent">
             <article class="tile is-child box">
-                <h2 class="title">Prediction: {% if prediction_winner %}{{prediction_winner}}{% endif %}</h2>
                 {% if prediction_result %}
+                <h2 class="title">Prediction: {% if prediction_winner %}{{prediction_winner}}{% endif %}</h2>
                 <div id="graph-0"></div>
                 {% else %}
-                  <img src="{{url_for('static', filename='img/les_paul_predict.png')}}" width=500 class="img-rounded">
+                <h2 class="title">Prediction: Gibson Les Paul</h2>
+                <img src="{{url_for('static', filename='img/les_paul_predict.png')}}" width=500 class="img-rounded">
                 {% endif %}
 
             </article>
