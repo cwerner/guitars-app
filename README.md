@@ -1,5 +1,7 @@
-# AxeNet (Guitar Classifier)
-Toy neural nets to classify guitar models.
+# AxeNet - Guitar Classifier
+A web app to classify guitar models using a Convolutional Neural Net (CNN). 
 
 ## Version 1
-A simple 11-Class resnet50 classifier.
+A simple 11-Class ResNet-50 classifier.
+
+![](images/screenshot.png?raw=true)
