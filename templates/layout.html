@@ -10,33 +10,36 @@
 
 <body>
 
-        <nav class="navbar is-info" role="navigation" aria-label="main navigation">
-                <div class="navbar-brand">
-                    <a class="navbar-item is-hoverable" href="/">AxeNet</a>
-                    <a class="navbar-item is-hoverable" href="/about">About</a>
-         
-                    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
-                    </a>
-                </div>
-        
-                <div id="navbarBasicExample" class="navbar-menu">
-                    <div class="navbar-end">
-                        <a class="navbar-item is-hoverable" href="https://www.christianwerner.net">Who made this?</a>
-                    </div>
-                </div>
-            </nav>
-        
+    <nav class="navbar is-link" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item is-hoverable" href="/">
+                <img src="{{url_for('static', filename='img/axenet_icon_trans.png')}}" width="112" height="29">
+            </a>
+
+            <a class="navbar-item is-hoverable" href="/about">About</a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-end">
+                <a class="navbar-item is-hoverable" href="https://www.christianwerner.net">Who made this?</a>
+            </div>
+        </div>
+    </nav>
+
     <section class="hero is-dark">
         <div class="hero-body">
             <div class="container">
                 <h1 class="title">
-                    AxeNet
+                    Guitar Classifier
                 </h1>
                 <h2 class="subtitle">
-                    "Now, tell me what guitar I'm looking at... !!!"
+                    "Now, tell me what guitar I'm looking at..."
                 </h2>
             </div>
         </div>
@@ -54,7 +57,7 @@
         </div>
     </footer>
 
-<script type="text/javascript" src="{{ url_for('static', filename='js/bulma.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bulma.js') }}"></script>
     <!-- D3.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
     <!-- jQuery -->
@@ -62,9 +65,10 @@
     <!-- Plotly.js -->
     <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
 
-<script type="text/javascript">
-    var graph = {{graphJSON | safe}};
-    Plotly.plot("graph-0", graph.data, graph.layout, {displayModeBar: false, showLink: false});
-  </script>
+    <script type="text/javascript">
+        var graph = {{ graphJSON | safe}};
+        Plotly.plot("graph-0", graph.data, graph.layout, { displayModeBar: false, showLink: false });
+    </script>
 </body>
+
 </html>
