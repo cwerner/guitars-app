@@ -45,6 +45,10 @@ def FUN_404(error):
 def FUN_405(error):
     return render_template("error.html")
 
+@app.errorhandler(413)
+def FUN_413(error):
+    return render_template("error.html")
+
 @app.errorhandler(500)
 def FUN_500(error):
     return render_template("error.html")
