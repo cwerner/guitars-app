@@ -8,3 +8,4 @@ numpy
 pandas
 Pillow
 plotly
+gunicorn
