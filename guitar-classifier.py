@@ -30,7 +30,7 @@ import plotly.graph_objs as go
 
 app = Flask(__name__)
 # restrict the size of the file uploaded
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+#app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 def allowed_file(filename):
