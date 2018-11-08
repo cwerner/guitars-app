@@ -108,9 +108,8 @@ def get_image(file_location, local=False):
     return None
 
 
-def predict(file_location, local=False):
+def predict(file_location, local=False, threshold=0.5):
     img = get_image(file_location, local)
-
 
     pred_class, pred_idx, outputs = learner.predict(img)
 
@@ -126,15 +125,11 @@ def predict(file_location, local=False):
             reverse=True
         )
 
-    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(np.log(outputs), dim=0)]
-    pred_probs2 = sorted(
-            zip(learner.data.classes, formatted_outputs ),
-            key=lambda p: p[1],
-            reverse=True
-    )
+    winner_name = names[pred_probs[0][0]]
+    if pred_probs[0][1] < threshold*100:
+        winner_name = "Not Sure!" 
 
-
-    return (pred_probs, names[pred_probs2[0][0]])
+    return (pred_probs, winner_name)
 
 ###### Plotting
 def prediction_barchart(result):
@@ -175,8 +170,10 @@ def prediction_barchart(result):
 
             #title='Bar Plot',
             xaxis=dict(
-                title="Probability"
-            ),
+                title="Probability",
+                range=[0, 100]
+                ),
+
             hovermode='y',
             showlegend=True,
             margin=go.Margin(
