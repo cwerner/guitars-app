@@ -119,14 +119,14 @@ def predict(file_location, local=False):
     #print('pred_idx:', pred_idx)
     #print('outputs:', outputs)
 
-    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
+    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(np.log(outputs), dim=0)]
     pred_probs = sorted(
             zip(learner.data.classes, formatted_outputs ),
             key=lambda p: p[1],
             reverse=True
         )
 
-    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]
+    formatted_outputs = [x.numpy() * 100 for x in torch.nn.functional.softmax(np.log(outputs), dim=0)]
     pred_probs2 = sorted(
             zip(learner.data.classes, formatted_outputs ),
             key=lambda p: p[1],
@@ -144,7 +144,7 @@ def prediction_barchart(result):
     y_values, x_values = map(list, zip(*result))
     # Create the Plotly Data Structure
 
-    x_values = [x + 0.001 if x < 0 else x for x in x_values]
+    x_values = [x  if x < 0 else x for x in x_values]
     y_values = [names[y] for y in y_values]
 
     # classify based on prob.
@@ -154,7 +154,7 @@ def prediction_barchart(result):
     colors = dict(zip(labels, cols))
   
     
-    bins = [-0.1, 10, 25, 75, 100.1]
+    bins = [-0.001, 10, 25, 75, 100.001]
 
     # Build dataframe
     df = pd.DataFrame({'y': y_values,
