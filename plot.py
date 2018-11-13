@@ -13,7 +13,6 @@ def prediction_barchart(result, class_labels, class_dict=None):
     # Create the Plotly Data Structure
 
     x_values = [x  if x < 0 else x for x in x_values]
-    y_values = class_labels
     if class_dict:
         y_values = [class_dict[y] for y in y_values]
 

@@ -162,7 +162,7 @@ def FUN_root():
 	# If user chooses to upload an image instead, endpoint "/upload_image" will be invoked
     if request.method == "POST":
         img_url = request.form.get("img_url")
-        #prediction_result = mx_predict(img_url)
+
         prediction_result, prediction_winner = predict(img_url)
 
         plotly_json = prediction_barchart(prediction_result, labels, names)
