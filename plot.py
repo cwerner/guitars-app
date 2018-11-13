@@ -8,14 +8,15 @@ import plotly.graph_objs as go
 
 def prediction_barchart(result, class_labels, class_dict=None):
 
+    LIMIT = 7
     # data is list of name, value pairs
     y_values, x_values = map(list, zip(*result))
     # Create the Plotly Data Structure
 
-    x_values = [x  if x < 0 else x for x in x_values]
+    x_values = [x  if x < 0 else x for x in x_values][:LIMIT]
     if class_dict:
         y_values = [class_dict[y] for y in y_values]
-
+    y_values = y_values[:LIMIT]
     # classify based on prob.
     labels = ['Hm?', 'Maybe', 'Probably', 'Trust me']
     cols   = ['red', 'orange', 'lightgreen', 'darkgreen']

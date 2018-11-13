@@ -37,7 +37,7 @@
                   {% if img_src %}
                     <img src="{{img_src}}" class="img-rounded">
                   {% else %}
-                    <img src="{{url_for('static', filename='img/les_paul.jpg')}}" width=500 height=500 class="img-rounded">
+                    <img src="{{url_for('static', filename='img/les_paul.jpg')}}" width=400 height=400 class="img-rounded">
                   {% endif %}
                 </figure>
             </article>
@@ -49,7 +49,7 @@
                 <div id="graph-0"></div>
                 {% else %}
                 <h2 class="title">Prediction: Gibson Les Paul</h2>
-                <img src="{{url_for('static', filename='img/les_paul_predict.png')}}" width=500 class="img-rounded">
+                <img src="{{url_for('static', filename='img/les_paul_predict.png')}}" width=400 class="img-rounded">
                 {% endif %}
 
             </article>
