@@ -62,33 +62,37 @@ def FUN_500(error):
 # Functions for running classifier
 ################################################
 
-# define the classes (TODO: read from file with model)
-labels = ['fender_telecaster', 'gibson_les_paul', 'gibson_es', 
-          'gibson_explorer', 'gibson_flying_v', 'fender_mustang', 
-          'fender_stratocaster', 'gibson_sg', 'fender_jaguar', 
-          'gibson_firebird', 'fender_jazzmaster']
-
-# lookup
-names = {'fender_telecaster': "Fender Telecaster",
-         'gibson_les_paul':   "Gibson Les Paul",
-         'gibson_es':         "Gibson ES", 
-         'gibson_explorer':   "Gibson Explorer",
-         'gibson_flying_v':   "Gibson Flying V",
-         'fender_mustang':    "Fender Mustang",
-         'fender_stratocaster': 'Fender Stratocaster', 
-         'gibson_sg':         "Gibson SG",
-         'fender_jaguar':     "Fender Jaguar",
-         'gibson_firebird':   "Gibson Firebird", 
-         'fender_jazzmaster': "Fender Jazzmaster"}
 
 MODEL = 'v0.1-stage-3-50.pth'
+CLASSES = 'v0.1-stage-3-50.cls' 
 
+# load class definitions
+labels = []
+names = {}
+
+with open("models/%s" % CLASSES) as f_classes:
+    for line in f_classes:
+        label, full_name = line.split(',')
+        label = label.strip()
+        full_name = full_name.replace('"','').strip()
+        labels.append(label)
+        names[label] = full_name
+
+print(labels)
+
+print(names)
+
+# load model
 path = Path("/tmp")
 data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
 learner = create_cnn(data, models.resnet50)
 learner.model.load_state_dict(
     torch.load("models/%s" % MODEL, map_location="cpu")
 )
+
+
+
+
 
 def get_image(file_location, local=False):
     # users can either 
@@ -196,7 +200,6 @@ def FUN_upload_image():
         if file and allowed_file(file.filename):
             filename = os.path.join("static/img_pool", hashlib.sha256(str(datetime.datetime.now()).encode('utf-8')).hexdigest() + secure_filename(file.filename).lower())
             file.save(filename)
-            #prediction_result = mx_predict(filename, local=True)
 
             prediction_result, prediction_winner = predict(filename, local=True)
             FUN_resize_img(filename)
