@@ -1,0 +1,25 @@
+Model:
+guitars-v1-11cl-res50-448px-02.pth
+
+Date:
+2018-11-18
+
+NoteBook:
+Guitar_Classifier.ipynb
+
+Platform:
+crestle.ai (K80)
+
+Classes:
+fender_jaguar, "Fender Jaguar"
+fender_jazzmaster, "Fender Jazzmaster"
+fender_mustang, "Fender Mustang"
+fender_stratocaster, "Fender Stratocaster"
+fender_telecaster, "Fender Telecaster"
+gibson_ES, "Gibson ES"
+gibson_Flying_V, "Gibson Flying V"
+gibson_SG, "Gibson SG"
+gibson_explorer, "Gibson Explorer"
+gibson_firebird, "Gibson Firebird"
+gibson_les_paul, "Gibson Les Paul"
+
