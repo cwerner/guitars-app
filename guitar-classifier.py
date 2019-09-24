@@ -84,7 +84,7 @@ print(names)
 
 # load model
 path = Path("/tmp")
-data = ImageDataBunch.single_from_classes(path, labels, tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
+data = ImageDataBunch.single_from_classes(path, labels, ds_tfms=get_transforms(max_warp=0.0), size=299).normalize(imagenet_stats)
 learner = create_cnn(data, models.resnet50)
 learner.model.load_state_dict(
     torch.load("models/%s" % MODEL, map_location="cpu")
